@@ -1,0 +1,30 @@
+dataset: "kokoro"
+
+path:
+  metadata_path: "/home/spow12/codes/TTS/Kokoro-Speech-Dataset/output/metadata.csv"
+  lexicon_path: "/home/spow12/codes/TTS/mfa/data/dictionary/visualnovel_phoneme_dict.txt"
+  raw_path: "./raw_data/kokoro/"
+  preprocessed_path: "./preprocessed_data/kokoro"
+
+preprocessing:
+  val_size: 512
+  text:
+    text_cleaners: ["basic_cleaners"]
+    language: "ja"
+  audio:
+    sampling_rate: 22050
+    max_wav_value: 32768.0
+  stft:
+    filter_length: 1024
+    hop_length: 256
+    win_length: 1024
+  mel:
+    n_mel_channels: 80
+    mel_fmin: 0
+    mel_fmax: 8000 # please set to 8000 for HiFi-GAN vocoder, set to null for MelGAN vocoder
+  pitch:
+    feature: "phoneme_level" # support 'phoneme_level' or 'frame_level'
+    normalization: True
+  energy:
+    feature: "phoneme_level" # support 'phoneme_level' or 'frame_level'
+    normalization: True
