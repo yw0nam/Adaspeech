@@ -1,9 +1,8 @@
 import torch
 from torch import nn
 import pytorch_lightning as pl
-from .scheduler import ScheduledOptim
-from .fastspeech2 import FastSpeech2
-from .loss import FastSpeech2Loss
+from .adaspeech1 import Adaspeech1
+from .loss import Adaspeech1Loss
 import matplotlib.pyplot as plt
 from utils.model import get_vocoder
 from utils.tools import synth_one_sample
@@ -17,8 +16,8 @@ class PL_model(pl.LightningModule):
         self.model_config = model_config
         self.train_config = train_config
         
-        self.model = FastSpeech2(preprocess_config, model_config)
-        self.loss = FastSpeech2Loss(preprocess_config, model_config)
+        self.model = Adaspeech1(preprocess_config, model_config)
+        self.loss = Adaspeech1Loss(preprocess_config, model_config)
         self.draw_step = 0
         
     def forward(self, data):
@@ -36,6 +35,7 @@ class PL_model(pl.LightningModule):
         self.log("pitch_loss", losses[3], on_epoch=False, on_step=True)
         self.log("energy_loss", losses[4], on_epoch=False, on_step=True)
         self.log("duration_loss", losses[5], on_epoch=False, on_step=True)
+        self.log("acoustic_loss", losses[6], on_epoch=False, on_step=True)
         return losses[0]
 
     def validation_step(self, batch, batch_idx):
@@ -44,12 +44,13 @@ class PL_model(pl.LightningModule):
         
         losses = self.loss(inputs, preds)
         
-        self.log("val_total_loss",  losses[0], on_epoch=True, on_step=False)
-        self.log("val_mel_loss", losses[1], on_epoch=True, on_step=False)
-        self.log("val_postnet_mel_loss", losses[2], on_epoch=True, on_step=False)
-        self.log("val_pitch_loss", losses[3], on_epoch=True, on_step=False)
-        self.log("val_energy_loss", losses[4], on_epoch=True, on_step=False)
-        self.log("val_duration_loss", losses[5], on_epoch=True, on_step=False)
+        self.log("val_total_loss",  losses[0], on_epoch=True, on_step=False, sync_dist=True)
+        self.log("val_mel_loss", losses[1], on_epoch=True, on_step=False, sync_dist=True)
+        self.log("val_postnet_mel_loss", losses[2], on_epoch=True, on_step=False, sync_dist=True)
+        self.log("val_pitch_loss", losses[3], on_epoch=True, on_step=False, sync_dist=True)
+        self.log("val_energy_loss", losses[4], on_epoch=True, on_step=False, sync_dist=True)
+        self.log("val_duration_loss", losses[5], on_epoch=True, on_step=False, sync_dist=True)
+        self.log("val_acoustic_loss", losses[6], on_epoch=True, on_step=False, sync_dist=True)
         
         return [meta, inputs, preds]
     
@@ -80,16 +81,15 @@ class PL_model(pl.LightningModule):
                 sample_rate=self.preprocess_config["preprocessing"]["audio"]['sampling_rate'],
             )
             self.draw_step += self.train_config['step']['synth_step']
-            
+    
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(
+        optimizer = torch.optim.AdamW(
             self.model.parameters(), 
             betas=self.train_config["optimizer"]["betas"],
             eps=self.train_config["optimizer"]["eps"],
             weight_decay=self.train_config["optimizer"]["weight_decay"],
             lr=self.train_config["optimizer"]['lr']
         )
-        # scheduler = ScheduledOptim(optimizer, self.train_config)
         scheduler = get_cosine_with_hard_restarts_schedule_with_warmup(
             optimizer=optimizer,
             num_training_steps=self.train_config['step']['total_step'],

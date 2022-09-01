@@ -8,24 +8,33 @@ import torch.nn.functional as F
 from transformer import Encoder, Decoder, PostNet
 from .modules import VarianceAdaptor
 from utils.tools import get_mask_from_lengths
+from .acoustic_encoder import UtteranceEncoder, PhonemeLevelEncoder, PhonemeLevelPredictor
 
-
-class FastSpeech2(nn.Module):
-    """ FastSpeech2 """
+class Adaspeech1(nn.Module):
+    """ Adaspeech 1 """
 
     def __init__(self, preprocess_config, model_config):
-        super(FastSpeech2, self).__init__()
+        super(Adaspeech1, self).__init__()
         self.model_config = model_config
-
+        n_mels = preprocess_config["preprocessing"]["mel"]["n_mel_channels"]
+        
         self.encoder = Encoder(model_config)
         self.variance_adaptor = VarianceAdaptor(preprocess_config, model_config)
         self.decoder = Decoder(model_config)
         self.mel_linear = nn.Linear(
             model_config["transformer"]["decoder_hidden"],
-            preprocess_config["preprocessing"]["mel"]["n_mel_channels"],
+            n_mels,
         )
         self.postnet = PostNet()
-
+        
+        self.utter_encoder = UtteranceEncoder(n_mels)
+        self.phoneme_lv_encoder = PhonemeLevelEncoder(n_mels)
+        self.phoneme_lv_predictor = PhonemeLevelPredictor(model_config["transformer"]["encoder_hidden"])
+        self.phone_level_emb = nn.Linear(
+            model_config['acoustic_encoder']['latent_dim'], 
+            model_config["transformer"]["encoder_hidden"]
+        )
+        
         self.speaker_emb = None
         if model_config["multi_speaker"]:
             with open(
@@ -47,6 +56,7 @@ class FastSpeech2(nn.Module):
         text_lens,
         max_text_lens,
         mels=None,
+        mel_wrt_phonemes=None,
         mel_lens=None,
         max_mel_lens=None,
         p_targets=None,
@@ -55,6 +65,7 @@ class FastSpeech2(nn.Module):
         p_control=1.0,
         e_control=1.0,
         d_control=1.0,
+        is_inference=False
     ):
         src_masks = get_mask_from_lengths(text_lens, max_text_lens)
         mel_masks = (
@@ -64,7 +75,21 @@ class FastSpeech2(nn.Module):
         )
 
         output = self.encoder(texts, src_masks)
-
+        utter_out = self.utter_encoder(mels)
+        
+        phn = None
+        pred_phn = None
+        if not is_inference:
+            pred_phn = self.phone_level_emb(self.phoneme_lv_predictor(output))
+            phn = self.phone_level_emb(self.phoneme_lv_encoder(mel_wrt_phonemes))
+            output = output + phn
+        else:
+            pred_phn = self.phone_level_emb(self.phoneme_lv_predictor(output))
+            output = output + pred_phn
+        
+        output = output + utter_out.transpose(1,2).repeat(1, output.size(1), 1)
+        
+        
         if self.speaker_emb is not None:
             output = output + self.speaker_emb(speakers).unsqueeze(1).expand(
                 -1, max_text_lens, -1
@@ -107,4 +132,6 @@ class FastSpeech2(nn.Module):
             mel_masks,
             text_lens,
             mel_lens,
+            phn,
+            pred_phn
         )

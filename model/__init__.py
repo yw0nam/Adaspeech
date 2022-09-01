@@ -1,4 +1,3 @@
-from .fastspeech2 import FastSpeech2
-from .loss import FastSpeech2Loss
-# from .optimizer import ScheduledOptim
+from .adaspeech1 import Adaspeech1
+from .loss import Adaspeech1Loss
 from .scheduler import ScheduledOptim

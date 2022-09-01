@@ -115,6 +115,6 @@ raw_data/
 output/
 *.npy
 TextGrid/
-preprocessed_data/*/*/*/*
+preprocessed_data/
 hifigan/*.pth.tar
 model_weights/*

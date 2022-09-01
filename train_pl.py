@@ -9,11 +9,6 @@ from pytorch_lightning.strategies import DDPStrategy
 import yaml
 from dataset import Dataset
 
-save_path = './model_weights/'
-ckp_path = os.path.join(save_path, 'checkpoint')
-log_path = os.path.join(save_path, 'tensorboard')
-exp_name = 'visual_novel_modify_schedule_3'
-
 def main(train_config, preprocess_config, model_config):
     pl.seed_everything(42)
     num_gpu = torch.cuda.device_count()
@@ -54,14 +49,15 @@ def main(train_config, preprocess_config, model_config):
 
     checkpoint_callback = plc.ModelCheckpoint(
         monitor="step",
-        dirpath=os.path.join(ckp_path, exp_name),
+        dirpath=os.path.join(train_config['path']['ckpt_path'], train_config['path']['exp_name']),
         filename="{step:06d}",
-        save_top_k=5,
+        save_top_k=10,
         mode="max",
-        every_n_train_steps=1000
+        every_n_train_steps=train_config['step']['save_step']
     )
 
-    logger = TensorBoardLogger(log_path, name=exp_name)
+    logger = TensorBoardLogger(
+        train_config['path']['log_path'], name=train_config['path']['exp_name'])
     lr_monitor = LearningRateMonitor(logging_interval='step')
     
     trainer = pl.Trainer(
@@ -71,12 +67,10 @@ def main(train_config, preprocess_config, model_config):
         max_steps=train_config['step']['total_step'],
         enable_checkpointing=True,
         callbacks=[checkpoint_callback, lr_monitor],
-        # precision=16,
-        amp_backend="native",
         profiler="simple",
-        accumulate_grad_batches=1,
+        accumulate_grad_batches=train_config['trainer']['grad_acc'],
         logger=logger,
-        gradient_clip_val=1,
+        gradient_clip_val=train_config['trainer']['grad_clip_thresh']
     )
     trainer.fit(model)
     

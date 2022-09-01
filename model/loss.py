@@ -2,11 +2,11 @@ import torch
 import torch.nn as nn
 
 
-class FastSpeech2Loss(nn.Module):
+class Adaspeech1Loss(nn.Module):
     """ FastSpeech2 Loss """
 
     def __init__(self, preprocess_config, model_config):
-        super(FastSpeech2Loss, self).__init__()
+        super(Adaspeech1Loss, self).__init__()
         self.pitch_feature_level = preprocess_config["preprocessing"]["pitch"][
             "feature"
         ]
@@ -19,7 +19,7 @@ class FastSpeech2Loss(nn.Module):
     def forward(self, inputs, predictions):
         (
             _, _, _, _, 
-            mel_targets, _, _, 
+            mel_targets, _, _, _, 
             pitch_targets, 
             energy_targets, 
             duration_targets
@@ -36,6 +36,8 @@ class FastSpeech2Loss(nn.Module):
             mel_masks,
             _,
             _,
+            phn,
+            pred_phn
         ) = predictions
         src_masks = ~src_masks
         mel_masks = ~mel_masks
@@ -71,15 +73,20 @@ class FastSpeech2Loss(nn.Module):
         )
         mel_targets = mel_targets.masked_select(mel_masks.unsqueeze(-1))
 
+        phn = phn.masked_select(src_masks.unsqueeze(-1))
+        pred_phn = pred_phn.masked_select(src_masks.unsqueeze(-1))
+        
         mel_loss = self.mae_loss(mel_predictions, mel_targets)
         postnet_mel_loss = self.mae_loss(postnet_mel_predictions, mel_targets)
 
         pitch_loss = self.mse_loss(pitch_predictions, pitch_targets)
         energy_loss = self.mse_loss(energy_predictions, energy_targets)
         duration_loss = self.mse_loss(log_duration_predictions, log_duration_targets)
-
+        
+        acoustic_loss = self.mse_loss(pred_phn, phn)
+        
         total_loss = (
-            mel_loss + postnet_mel_loss + duration_loss + pitch_loss + energy_loss
+            mel_loss + postnet_mel_loss + duration_loss + pitch_loss + energy_loss + acoustic_loss
         )
 
         return (
@@ -89,4 +96,5 @@ class FastSpeech2Loss(nn.Module):
             pitch_loss,
             energy_loss,
             duration_loss,
+            acoustic_loss
         )
