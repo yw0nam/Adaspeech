@@ -11,20 +11,20 @@ from .SubLayers import MultiHeadAttention, PositionwiseFeedForward
 class FFTBlock(torch.nn.Module):
     """FFT Block"""
 
-    def __init__(self, d_model, n_head, d_k, d_v, d_inner, kernel_size, dropout=0.1):
+    def __init__(self, d_model, n_head, d_k, d_v, d_inner, kernel_size, dropout=0.1, cond_LN=False):
         super(FFTBlock, self).__init__()
-        self.slf_attn = MultiHeadAttention(n_head, d_model, d_k, d_v, dropout=dropout)
+        self.slf_attn = MultiHeadAttention(n_head, d_model, d_k, d_v, dropout=dropout, cond_LN=cond_LN)
         self.pos_ffn = PositionwiseFeedForward(
-            d_model, d_inner, kernel_size, dropout=dropout
+            d_model, d_inner, kernel_size, dropout=dropout, cond_LN=cond_LN
         )
 
-    def forward(self, enc_input, mask=None, slf_attn_mask=None):
+    def forward(self, enc_input, mask=None, slf_attn_mask=None, speaker_emb: torch.Tensor = None):
         enc_output, enc_slf_attn = self.slf_attn(
-            enc_input, enc_input, enc_input, mask=slf_attn_mask
+            enc_input, enc_input, enc_input, mask=slf_attn_mask, speaker_emb=speaker_emb
         )
         enc_output = enc_output.masked_fill(mask.unsqueeze(-1), 0)
 
-        enc_output = self.pos_ffn(enc_output)
+        enc_output = self.pos_ffn(enc_output, speaker_emb=speaker_emb)
         enc_output = enc_output.masked_fill(mask.unsqueeze(-1), 0)
 
         return enc_output, enc_slf_attn

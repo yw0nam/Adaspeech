@@ -6,7 +6,8 @@ from scipy.io import wavfile
 from tqdm import tqdm
 import pandas as pd
 from text import _clean_text
-    
+import unicodedata
+
 def prepare_align(config):
     metadata_path = config["path"]["metadata_path"]
     out_dir = config["path"]["raw_path"]
@@ -17,7 +18,6 @@ def prepare_align(config):
     speaker = 'kokoro'
     root_path = os.path.join(os.path.dirname(metadata_path), 'wavs')
     csv = pd.read_csv(metadata_path, delimiter='|', names=['wav_name', 'jp_txt', 'arp_txt'])
-    
     os.makedirs(os.path.join(out_dir, speaker), exist_ok=True)
     for i in tqdm(range(len(csv))):
         base_name = csv['wav_name'].iloc[i]

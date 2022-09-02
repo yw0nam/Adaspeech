@@ -163,7 +163,7 @@ def synth_one_sample(basename, targets, predictions, vocoder, model_config, prep
 
 def synth_samples(targets, predictions, vocoder, model_config, preprocess_config, path):
 
-    basenames = targets[0]
+    basenames = targets['ids']
     for i in range(len(predictions[0])):
         basename = basenames[i]
         src_len = predictions[8][i].item()

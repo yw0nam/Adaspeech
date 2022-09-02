@@ -9,6 +9,7 @@ transformer:
   conv_kernel_size: [9, 1]
   encoder_dropout: 0.2
   decoder_dropout: 0.2
+  conditional_layernorm: True
 
 variance_predictor:
   filter_size: 256

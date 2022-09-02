@@ -5,7 +5,7 @@ import numpy as np
 import transformer.Constants as Constants
 from .Layers import FFTBlock
 from text.symbols import symbols
-
+from transformer.SubLayers import ConditionalLayerNorm
 
 def get_sinusoid_encoding_table(n_position, d_hid, padding_idx=None):
     """ Sinusoid position encoding table """
@@ -120,6 +120,7 @@ class Decoder(nn.Module):
         dropout = config["transformer"]["decoder_dropout"]
 
         self.max_seq_len = config["max_seq_len"]
+        self.cond_LN = config["transformer"]["conditional_layernorm"]
         self.d_model = d_model
 
         self.position_enc = nn.Parameter(
@@ -127,16 +128,19 @@ class Decoder(nn.Module):
             requires_grad=False,
         )
 
+        if self.cond_LN:
+            self.last_cond_LN = ConditionalLayerNorm(d_model)
+            
         self.layer_stack = nn.ModuleList(
             [
                 FFTBlock(
-                    d_model, n_head, d_k, d_v, d_inner, kernel_size, dropout=dropout
+                    d_model, n_head, d_k, d_v, d_inner, kernel_size, dropout=dropout, cond_LN=self.cond_LN
                 )
                 for _ in range(n_layers)
             ]
         )
 
-    def forward(self, enc_seq, mask, return_attns=False):
+    def forward(self, enc_seq, mask, return_attns=False, speaker_emb: torch.Tensor = None):
 
         dec_slf_attn_list = []
         batch_size, max_len = enc_seq.shape[0], enc_seq.shape[1]
@@ -163,9 +167,10 @@ class Decoder(nn.Module):
 
         for dec_layer in self.layer_stack:
             dec_output, dec_slf_attn = dec_layer(
-                dec_output, mask=mask, slf_attn_mask=slf_attn_mask
+                dec_output, mask=mask, slf_attn_mask=slf_attn_mask, speaker_emb=speaker_emb
             )
             if return_attns:
                 dec_slf_attn_list += [dec_slf_attn]
-
+        if self.cond_LN:
+            dec_output = self.last_cond_LN(dec_output, speaker_emb)
         return dec_output, mask

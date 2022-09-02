@@ -91,7 +91,8 @@ class Adaspeech1(nn.Module):
         
         
         if self.speaker_emb is not None:
-            output = output + self.speaker_emb(speakers).unsqueeze(1).expand(
+            speaker_emb = self.speaker_emb(speakers)
+            output = output + speaker_emb.unsqueeze(1).expand(
                 -1, max_text_lens, -1
             )
 
@@ -116,7 +117,7 @@ class Adaspeech1(nn.Module):
             d_control,
         )
 
-        output, mel_masks = self.decoder(output, mel_masks)
+        output, mel_masks = self.decoder(output, mel_masks, speaker_emb=speaker_emb)
         output = self.mel_linear(output)
 
         postnet_output = self.postnet(output) + output

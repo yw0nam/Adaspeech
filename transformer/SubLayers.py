@@ -2,13 +2,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-from .Modules import ScaledDotProductAttention
+from .Modules import ScaledDotProductAttention, ConditionalLayerNorm
 
 
 class MultiHeadAttention(nn.Module):
     """ Multi-Head Attention module """
 
-    def __init__(self, n_head, d_model, d_k, d_v, dropout=0.1):
+    def __init__(self, n_head, d_model, d_k, d_v, dropout=0.1, cond_LN=False):
         super().__init__()
 
         self.n_head = n_head
@@ -18,15 +18,17 @@ class MultiHeadAttention(nn.Module):
         self.w_qs = nn.Linear(d_model, n_head * d_k)
         self.w_ks = nn.Linear(d_model, n_head * d_k)
         self.w_vs = nn.Linear(d_model, n_head * d_v)
-
+        self.cond_LN = cond_LN
         self.attention = ScaledDotProductAttention(temperature=np.power(d_k, 0.5))
-        self.layer_norm = nn.LayerNorm(d_model)
-
+        if cond_LN == True:
+            self.layer_norm = ConditionalLayerNorm(d_model)
+        else:
+            self.layer_norm = nn.LayerNorm(d_model)
         self.fc = nn.Linear(n_head * d_v, d_model)
 
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, q, k, v, mask=None):
+    def forward(self, q, k, v, mask=None, speaker_emb=None):
 
         d_k, d_v, n_head = self.d_k, self.d_v, self.n_head
 
@@ -52,15 +54,17 @@ class MultiHeadAttention(nn.Module):
         )  # b x lq x (n*dv)
 
         output = self.dropout(self.fc(output))
-        output = self.layer_norm(output + residual)
-
+        if self.cond_LN == True:
+            output = self.layer_norm(output + residual, speaker_emb)
+        else:
+            output = self.layer_norm(output + residual)
         return output, attn
 
 
 class PositionwiseFeedForward(nn.Module):
     """ A two-feed-forward-layer module """
 
-    def __init__(self, d_in, d_hid, kernel_size, dropout=0.1):
+    def __init__(self, d_in, d_hid, kernel_size, dropout=0.1, cond_LN=False):
         super().__init__()
 
         # Use Conv1D
@@ -78,16 +82,26 @@ class PositionwiseFeedForward(nn.Module):
             kernel_size=kernel_size[1],
             padding=(kernel_size[1] - 1) // 2,
         )
-
-        self.layer_norm = nn.LayerNorm(d_in)
+        self.cond_LN = cond_LN
+        
+        if cond_LN == True:
+            self.layer_norm = ConditionalLayerNorm(d_in)
+        else:
+            self.layer_norm = nn.LayerNorm(d_in)
+            
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x):
+    def forward(self, x, speaker_emb=None):
         residual = x
         output = x.transpose(1, 2)
         output = self.w_2(F.relu(self.w_1(output)))
         output = output.transpose(1, 2)
         output = self.dropout(output)
-        output = self.layer_norm(output + residual)
+        
+        if self.cond_LN == True:
+            output = self.layer_norm(output + residual, speaker_emb)
+        else:
+            output = self.layer_norm(output + residual)
+
 
         return output
