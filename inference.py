@@ -1,17 +1,11 @@
 # %%
-from model.adaspeech1 import Adaspeech1
 from model.pl_model import PL_model
 from dataset import Dataset
-import torch
-import numpy as np
 import yaml
 from torch.utils.data import DataLoader
-from torch import nn
-from model.modules import Conv
-from model.acoustic_encoder import UtteranceEncoder, PhonemeLevelEncoder, PhonemeLevelPredictor
-from utils.tools import get_mask_from_lengths, synth_samples
+from utils.tools import synth_samples
 from utils.model import get_vocoder
-# %%
+
 preprocess_config = yaml.load(
     open("./config/visual_novel/preprocess.yaml", "r"), Loader=yaml.FullLoader
 )
@@ -44,13 +38,6 @@ def forward(self, data, is_inference):
     data['is_inference'] = is_inference
     return self.model(**data)
 
-# %%
 model.forward = forward.__get__(model)
-# %%
 prediction = model(inputs, False)
-# %%
 synth_samples(meta, prediction, vocoder, model_config, preprocess_config, './predictions/')
-# %%
-meta['ids']
-# %%
-s

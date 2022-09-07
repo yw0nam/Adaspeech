@@ -2,7 +2,7 @@ import argparse
 
 import yaml
 
-from preprocessor import ljspeech, aishell3, libritts, kss, visual_novel, kokoro, visual_novel_non_parse
+from preprocessor import ljspeech, kss, visual_novel, kokoro
 
 
 def main(config):
@@ -10,7 +10,7 @@ def main(config):
         ljspeech.prepare_align(config)
     if "KSS" in config["dataset"]:
         kss.prepare_align(config)
-    elif "visual_novel" in config['dataset']:
+    if "visual_novel" in config['dataset']:
         visual_novel.prepare_align(config)
     if "kokoro" in config['dataset']:
         kokoro.prepare_align(config)
