@@ -2,7 +2,6 @@ dataset: "KSS"
 
 path:
   corpus_path: "/data1/spow12/datas/TTS/kss/processed/"
-  lexicon_path: "/home/spow12/codes/TTS/mfa/data/dictionary/kss_phoneme_dict_g2p.txt"
   raw_path: "./raw_data/KSS/"
   preprocessed_path: "./preprocessed_data/KSS"
 
