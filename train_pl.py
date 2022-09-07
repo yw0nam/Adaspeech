@@ -76,12 +76,12 @@ def main(train_config, preprocess_config, model_config):
     
 if __name__ == '__main__':
     train_config = yaml.load(
-        open("./config/visual_novel/train.yaml", "r"), Loader=yaml.FullLoader
+        open("./config/kokoro/train.yaml", "r"), Loader=yaml.FullLoader
     )
     preprocess_config = yaml.load(
-        open("./config/visual_novel/preprocess.yaml", "r"), Loader=yaml.FullLoader
+        open("./config/kokoro/preprocess.yaml", "r"), Loader=yaml.FullLoader
     )
     model_config = yaml.load(
-        open("./config/visual_novel/model.yaml", "r"), Loader=yaml.FullLoader
+        open("./config/kokoro/model.yaml", "r"), Loader=yaml.FullLoader
     )
     main(train_config, preprocess_config, model_config)

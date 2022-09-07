@@ -90,6 +90,7 @@ class Adaspeech1(nn.Module):
         output = output + utter_out.transpose(1,2).repeat(1, output.size(1), 1)
         
         
+        speaker_emb = None
         if self.speaker_emb is not None:
             speaker_emb = self.speaker_emb(speakers)
             output = output + speaker_emb.unsqueeze(1).expand(
