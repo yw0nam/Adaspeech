@@ -16,7 +16,6 @@ model_config = yaml.load(
     open("./config/visual_novel/model.yaml", "r"), Loader=yaml.FullLoader
 )
 
-# %%
 train_dataset = Dataset(
     "train.txt", preprocess_config, train_config, sort=True, drop_last=True
 )
@@ -29,11 +28,10 @@ train_loader = DataLoader(
 for i, data in enumerate(train_loader):
     meta, inputs = data
     break
-# %%
+
 model = PL_model(train_config, preprocess_config, model_config).load_from_checkpoint('./output/ckpt/visual_novel/visual_novel/step=024000.ckpt')
 vocoder = get_vocoder(model_config, 'cpu')
-# output = model.encoder(inputs['texts'], src_masks)
-# %%
+
 def forward(self, data, is_inference):
     data['is_inference'] = is_inference
     return self.model(**data)

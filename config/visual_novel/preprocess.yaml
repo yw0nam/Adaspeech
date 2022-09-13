@@ -1,15 +1,16 @@
-dataset: "LJSpeech"
+dataset: "visual_novel"
 
 path:
-  corpus_path: "/data1/spow12/datas/TTS/LJSpeech-1.1"
-  raw_path: "./raw_data/LJSpeech"
-  preprocessed_path: "./preprocessed_data/LJSpeech"
+  metadata_path: "/home/spow12/codes/TTS/visual_novel/data/data_remove_wrongstrings_final.csv"
+  lexicon_path: "/home/spow12/codes/TTS/mfa/data/dictionary/ja/phonemizer/ja_simple_vn_addoovs_seperate_all.txt"
+  raw_path: "./raw_data/visual_novel/"
+  preprocessed_path: "./preprocessed_data/visual_novel"
 
 preprocessing:
   val_size: 512
   text:
-    text_cleaners: ["english_cleaners"]
-    language: "en"
+    text_cleaners: ["basic_cleaners"]
+    language: "ja"
   audio:
     sampling_rate: 22050
     max_wav_value: 32768.0

@@ -1,0 +1,19 @@
+path:
+  ckpt_path: "./output/ckpt/"
+  log_path: "./output/log/"
+  result_path: "./output/result/"
+  exp_name: "visual_novel_add_cond_LN"
+optimizer:
+  batch_size: 64
+  betas: [0.9, 0.98]
+  eps: 0.000000001
+  weight_decay: 0.0
+  lr: 0.001
+step:
+  total_step: 40000
+  warm_up_step: 4000
+  synth_step: 1000
+  save_step: 4000
+trainer:
+  grad_clip_thresh: 1.5
+  grad_acc: 2

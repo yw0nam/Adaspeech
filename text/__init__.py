@@ -32,8 +32,6 @@ def text_to_sequence(text, cleaner_names):
     # Check for curly braces and treat their contents as ARPAbet:
     while len(text):
         m = _curly_re.match(text)
-        sequence += _symbols_to_sequence(_clean_text(text,
-                                                    cleaner_names), _symbol_to_id)
         if not m:
             sequence += _symbols_to_sequence(_clean_text(text,
                                             cleaner_names), _symbol_to_id)
@@ -43,7 +41,6 @@ def text_to_sequence(text, cleaner_names):
         
         sequence += _arpabet_to_sequence(m.group(2), _language, _symbol_to_id)
         text = m.group(3)
-
     return sequence
 
 
@@ -54,10 +51,6 @@ def _clean_text(text, cleaner_names):
             raise Exception("Unknown cleaner: %s" % name)
         text = cleaner(text)
     return text
-
-
-# def _symbols_to_sequence(symbols, _symbol_to_id):
-#     return [_symbol_to_id[s] for s in symbols if _should_keep_symbol(s, _symbol_to_id)]
 
 def _symbols_to_sequence(symbols, _symbol_to_id):
     missing = [s for s in symbols if not _should_keep_symbol(s, _symbol_to_id)]

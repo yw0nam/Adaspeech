@@ -8,6 +8,18 @@ from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.strategies import DDPStrategy
 import yaml
 from dataset import Dataset
+import argparse
+
+def define_argparser():
+    p = argparse.ArgumentParser()
+
+    p.add_argument("-t", '--train_config', default='./config/LJSpeech/train.yaml', type=str)
+    p.add_argument("-p", '--preprocess_config', default='./config/LJSpeech/preprocess.yaml', type=str)
+    p.add_argument("-m", '--model_config', default='./config/LJSpeech/model.yaml', type=str)
+    p.add_argument('--exp_name', default='LJspeech', type=str)
+    config = p.parse_args()
+
+    return config
 
 def main(train_config, preprocess_config, model_config):
     pl.seed_everything(42)
@@ -75,13 +87,12 @@ def main(train_config, preprocess_config, model_config):
     trainer.fit(model)
     
 if __name__ == '__main__':
-    train_config = yaml.load(
-        open("./config/kokoro/train.yaml", "r"), Loader=yaml.FullLoader
-    )
-    preprocess_config = yaml.load(
-        open("./config/kokoro/preprocess.yaml", "r"), Loader=yaml.FullLoader
-    )
-    model_config = yaml.load(
-        open("./config/kokoro/model.yaml", "r"), Loader=yaml.FullLoader
-    )
+    args = define_argparser()
+    
+    train_config = yaml.load(open(args.train_config, "r"), Loader=yaml.FullLoader)
+    preprocess_config = yaml.load(open(args.preprocess_config, "r"), Loader=yaml.FullLoader)
+    model_config = yaml.load(open(args.model_config, "r"), Loader=yaml.FullLoader)
+    
+    train_config['path']['exp_name'] = args.exp_name
+    
     main(train_config, preprocess_config, model_config)
