@@ -16,10 +16,10 @@ model_config = yaml.load(
     open("./config/visual_novel/model.yaml", "r"), Loader=yaml.FullLoader
 )
 
-train_dataset = Dataset(
-    "train.txt", preprocess_config, train_config, sort=True, drop_last=True
+val_dataset = Dataset(
+    "val.txt", preprocess_config, train_config, sort=True, drop_last=True
 )
-train_loader = DataLoader(
+val_loader = DataLoader(
     train_dataset,
     batch_size=4,
     shuffle=False,
@@ -29,7 +29,7 @@ for i, data in enumerate(train_loader):
     meta, inputs = data
     break
 
-model = PL_model(train_config, preprocess_config, model_config).load_from_checkpoint('./output/ckpt/visual_novel/visual_novel/step=024000.ckpt')
+model = PL_model(train_config, preprocess_config, model_config).load_from_checkpoint("Your checkpoints")
 vocoder = get_vocoder(model_config, 'cpu')
 
 def forward(self, data, is_inference):
