@@ -1,6 +1,6 @@
 # AdaSpeech 1 - PyTorch Implementation
 
-This is a PyTorch implementation of Microsoft's text-to-speech system [**AdaSpeech: Adaptive Text to Speech for Custom Voice**](https://arxiv.org/abs/2103.00993). 
+This is a unofficial PyTorch implementation of Microsoft's text-to-speech system [**AdaSpeech: Adaptive Text to Speech for Custom Voice**](https://arxiv.org/abs/2103.00993). 
 
 This project is based on [ming024's implementation](https://github.com/ming024/FastSpeech2) of FastSpeech. Feel free to use/modify the code.
 
