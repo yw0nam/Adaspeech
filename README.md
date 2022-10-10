@@ -114,6 +114,12 @@ to serve TensorBoard on your localhost. The loss curves, synthesized mel-spectro
 
 <img src="figures/mels.png" width=900>
 
+# Note
+
+The conditional layer normalization is implemented in this repository.
+But, i haven't implemented adaptation of pre-trained models on new datasets, which is a key part of adaspeech.
+
+
 # References
 - [AdaSpeech: Adaptive Text to Speech for Custom Voice](https://arxiv.org/abs/2103.00993), Mingjian Chen, *et al*.
 - [ming024's FastSpeech2 implementation](https://github.com/ming024/FastSpeech2)
