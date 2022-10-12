@@ -94,6 +94,16 @@ Training the model using below code.
 CUDA_VISIBLE_DEVICES=0,1 python3 train_pl.py -p config/LJSpeech/preprocess.yaml -m config/LJSpeech/model.yaml -t config/LJSpeech/train.yaml
 ```
 
+# Infernce
+
+[Here](https://drive.google.com/drive/folders/1m5bq9vkQV1VKq8QmuYoCpaf_WCk3cmWc?usp=sharing) is the pretrained model.
+you can inference by
+
+```
+python3 inference.py
+```
+
+I will release inference code using the reference audio and given text soon.
 
 # TensorBoard
 
