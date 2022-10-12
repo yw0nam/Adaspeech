@@ -127,7 +127,7 @@ to serve TensorBoard on your localhost. The loss curves, synthesized mel-spectro
 # Note
 
 The conditional layer normalization is implemented in this repository.
-But, i haven't implemented adaptation of pre-trained models on new datasets, which is a key part of adaspeech.
+But, adapting pre-trained models on new datasets haven't implemented.
 
 
 # References
