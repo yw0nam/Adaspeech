@@ -16,7 +16,6 @@ def define_argparser():
     p.add_argument("-t", '--train_config', default='./config/LJSpeech/train.yaml', type=str)
     p.add_argument("-p", '--preprocess_config', default='./config/LJSpeech/preprocess.yaml', type=str)
     p.add_argument("-m", '--model_config', default='./config/LJSpeech/model.yaml', type=str)
-    p.add_argument('--exp_name', default='LJspeech', type=str)
     config = p.parse_args()
 
     return config
@@ -25,6 +24,14 @@ def main(train_config, preprocess_config, model_config):
     pl.seed_everything(42)
     num_gpu = torch.cuda.device_count()
 
+    
+    # if train_config['path']['restore_path'] != "":
+    #     model = PL_model(
+    #         train_config,
+    #         preprocess_config,
+    #         model_config,
+    #     ).load_from_checkpoint(train_config['path']['restore_path'])
+    # else:
     model = PL_model(
         train_config,
         preprocess_config,
@@ -32,7 +39,7 @@ def main(train_config, preprocess_config, model_config):
     )
 
     train_dataset = Dataset(
-        "train.txt", preprocess_config, train_config, sort=True, drop_last=True
+        train_config['path']['train_path'], preprocess_config, train_config, sort=True, drop_last=True
     )
 
     train_loader = DataLoader(
@@ -45,7 +52,7 @@ def main(train_config, preprocess_config, model_config):
     )
 
     val_dataset = Dataset(
-        "val.txt", preprocess_config, train_config, sort=True, drop_last=True
+        train_config['path']['val_path'], preprocess_config, train_config, sort=True, drop_last=True
     )
 
     val_loader = DataLoader(
@@ -92,7 +99,5 @@ if __name__ == '__main__':
     train_config = yaml.load(open(args.train_config, "r"), Loader=yaml.FullLoader)
     preprocess_config = yaml.load(open(args.preprocess_config, "r"), Loader=yaml.FullLoader)
     model_config = yaml.load(open(args.model_config, "r"), Loader=yaml.FullLoader)
-    
-    train_config['path']['exp_name'] = args.exp_name
     
     main(train_config, preprocess_config, model_config)

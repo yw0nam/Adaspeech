@@ -7,35 +7,38 @@ from utils.tools import synth_samples
 from utils.model import get_vocoder
 
 preprocess_config = yaml.load(
-    open("./config/visual_novel/preprocess.yaml", "r"), Loader=yaml.FullLoader
+    open("./config/visual_novel.en.add_pause/preprocess.yaml", "r"), Loader=yaml.FullLoader
 )
 train_config = yaml.load(
-    open("./config/visual_novel/train.yaml", "r"), Loader=yaml.FullLoader
+    open("./config/visual_novel.en.add_pause/train.yaml", "r"), Loader=yaml.FullLoader
 )
 model_config = yaml.load(
-    open("./config/visual_novel/model.yaml", "r"), Loader=yaml.FullLoader
+    open("./config/visual_novel.en.add_pause/model.yaml", "r"), Loader=yaml.FullLoader
 )
 
-val_dataset = Dataset(
-    "val.txt", preprocess_config, train_config, sort=True, drop_last=True
+test_dataset = Dataset(
+    "test.txt", preprocess_config, train_config, sort=True, drop_last=False
 )
-val_loader = DataLoader(
-    train_dataset,
+test_loader = DataLoader(
+    test_dataset,
     batch_size=4,
     shuffle=False,
-    collate_fn=train_dataset.collate_fn,
+    collate_fn=test_dataset.collate_fn,
 )
-for i, data in enumerate(train_loader):
-    meta, inputs = data
-    break
-
-model = PL_model(train_config, preprocess_config, model_config).load_from_checkpoint("Your checkpoints")
+# %%
+model = PL_model(train_config, preprocess_config, model_config).load_from_checkpoint("./output/ckpt/visual_novel.en_trim_dur.add_pause/step=040000.ckpt")
 vocoder = get_vocoder(model_config, 'cpu')
 
 def forward(self, data, is_inference):
     data['is_inference'] = is_inference
     return self.model(**data)
 
+
 model.forward = forward.__get__(model)
-prediction = model(inputs, False)
-synth_samples(meta, prediction, vocoder, model_config, preprocess_config, './predictions/')
+for i, data in enumerate(test_loader):
+    meta, inputs = data
+    prediction = model(inputs, False)
+    synth_samples(meta, prediction, vocoder, model_config, preprocess_config, './predictions/')
+# %%
+
+# %%

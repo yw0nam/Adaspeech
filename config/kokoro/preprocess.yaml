@@ -3,7 +3,7 @@ dataset: "kokoro"
 path:
   metadata_path: "/home/spow12/codes/TTS/Kokoro-Speech-Dataset/output/metadata.csv"
   raw_path: "./raw_data/kokoro/"
-  preprocessed_path: "./preprocessed_data/kokoro"
+  preprocessed_path: "./preprocessed_data/kokoro_2/"
 
 preprocessing:
   val_size: 512

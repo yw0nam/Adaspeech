@@ -138,8 +138,8 @@ class Preprocessor:
                 n_frames * self.hop_length / self.sampling_rate / 3600
             )
         )
-
-        random.shuffle(out)
+        
+        random.Random(1004).shuffle(out) 
         out = [r for r in out if r is not None]
 
         # Write metadata
