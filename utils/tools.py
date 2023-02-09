@@ -209,6 +209,20 @@ def synth_samples(targets, predictions, vocoder, model_config, preprocess_config
     for wav, basename in zip(wav_predictions, basenames):
         wavfile.write(os.path.join(path, "{}.wav".format(basename)), sampling_rate, wav)
 
+def inference_synth_one_samples(basename, mel, mel_length, vocoder, model_config, preprocess_config, path):
+
+        
+    from .model import vocoder_infer
+
+    mel_predictions = mel.transpose(1, 2)
+    lengths = mel_length * preprocess_config["preprocessing"]["stft"]["hop_length"]
+    wav_predictions = vocoder_infer(
+        mel_predictions, vocoder, model_config, preprocess_config, lengths=lengths
+    )
+
+    sampling_rate = preprocess_config["preprocessing"]["audio"]["sampling_rate"]
+    wavfile.write(os.path.join(path, "{}.wav".format(basename)), sampling_rate, wav_predictions[0])
+        
 
 def plot_mel(data, stats, titles):
     fig, axes = plt.subplots(len(data), 1, squeeze=False)

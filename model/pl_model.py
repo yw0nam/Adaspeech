@@ -16,18 +16,21 @@ class PL_model(pl.LightningModule):
         self.model_config = model_config
         self.train_config = train_config
         
-        self.model = Adaspeech1(preprocess_config, model_config)
-        self.loss = Adaspeech1Loss(preprocess_config, model_config)
+        self.model = Adaspeech1(preprocess_config, model_config, train_config)
+        self.loss = Adaspeech1Loss(preprocess_config, train_config)
         self.draw_step = 0
         
     def forward(self, data):
-        return self.model(**data)
+        return self.model(**data, global_step=self.global_step)
+    
+    def inference(self, data):
+        return self.model._inference(**data)
     
     def training_step(self, batch, batch_idx):
         _, inputs = batch
         preds = self.forward(inputs)
         
-        losses = self.loss(inputs, preds)
+        losses = self.loss(inputs, preds, self.global_step)
         
         self.log("total_loss",  losses[0], on_epoch=False, on_step=True)
         self.log("mel_loss", losses[1], on_epoch=False, on_step=True)
@@ -42,7 +45,7 @@ class PL_model(pl.LightningModule):
         meta, inputs = batch
         preds = self.forward(inputs)
         
-        losses = self.loss(inputs, preds)
+        losses = self.loss(inputs, preds, self.global_step)
         
         self.log("val_total_loss",  losses[0], on_epoch=True, on_step=False, sync_dist=True)
         self.log("val_mel_loss", losses[1], on_epoch=True, on_step=False, sync_dist=True)
@@ -83,7 +86,7 @@ class PL_model(pl.LightningModule):
             self.draw_step += self.train_config['step']['synth_step']
     
     def configure_optimizers(self):
-        optimizer = torch.optim.AdamW(
+        optimizer = torch.optim.Adam(
             self.model.parameters(), 
             betas=self.train_config["optimizer"]["betas"],
             eps=self.train_config["optimizer"]["eps"],
@@ -94,6 +97,6 @@ class PL_model(pl.LightningModule):
             optimizer=optimizer,
             num_training_steps=self.train_config['step']['total_step'],
             num_warmup_steps=self.train_config['step']['warm_up_step'],
-            num_cycles=1
+            num_cycles=self.train_config['step']['num_cycle']
         )
         return [optimizer], [{"scheduler": scheduler, "interval": "step"}]

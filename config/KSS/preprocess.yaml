@@ -1,9 +1,9 @@
 dataset: "KSS"
 
 path:
-  corpus_path: "/data1/spow12/datas/TTS/kss/processed/"
+  corpus_path: "/data1/spow12/datas/TTS/kss/" 
   raw_path: "./raw_data/KSS/"
-  preprocessed_path: "./preprocessed_data/KSS"
+  preprocessed_path: "./preprocessed_data/KSS/"
 
 preprocessing:
   val_size: 512

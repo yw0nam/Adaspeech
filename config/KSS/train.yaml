@@ -3,8 +3,10 @@ path:
   log_path: "./output/log/"
   result_path: "./output/result/"
   exp_name: "KSS"
+  train_path: "train.txt"
+  val_path: val.txt
 optimizer:
-  batch_size: 64
+  batch_size: 96
   betas: [0.9, 0.98]
   eps: 0.000000001
   weight_decay: 0.0
@@ -12,8 +14,10 @@ optimizer:
 step:
   total_step: 40000
   warm_up_step: 4000
-  synth_step: 1000
+  synth_step: 2000
   save_step: 4000
+  use_phoneme_level_predictor_step: 24000
+  num_cycle: 2
 trainer:
   grad_clip_thresh: 1.0
   grad_acc: 1

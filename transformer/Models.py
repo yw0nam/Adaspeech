@@ -127,9 +127,6 @@ class Decoder(nn.Module):
             get_sinusoid_encoding_table(n_position, d_word_vec).unsqueeze(0),
             requires_grad=False,
         )
-
-        if self.cond_LN:
-            self.last_cond_LN = ConditionalLayerNorm(d_model)
             
         self.layer_stack = nn.ModuleList(
             [
@@ -171,6 +168,4 @@ class Decoder(nn.Module):
             )
             if return_attns:
                 dec_slf_attn_list += [dec_slf_attn]
-        if self.cond_LN:
-            dec_output = self.last_cond_LN(dec_output, speaker_emb)
         return dec_output, mask

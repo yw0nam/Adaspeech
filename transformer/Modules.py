@@ -48,12 +48,12 @@ class ScaledDotProductAttention(nn.Module):
 
 class ConditionalLayerNorm(nn.Module):
     """ Conditional LayerNorm """
-    def __init__(self, hidden_size: int = 256, epsilon=1e-5):
+    def __init__(self, hidden_size: int = 256, speaker_embedding_dim: int = 256, epsilon=1e-5):
         super(ConditionalLayerNorm, self).__init__()
         
         self.epsilon = epsilon
-        self.W_scale = nn.Linear(hidden_size, hidden_size)
-        self.W_bias = nn.Linear(hidden_size, hidden_size)
+        self.W_scale = nn.Linear(speaker_embedding_dim, hidden_size)
+        self.W_bias = nn.Linear(speaker_embedding_dim, hidden_size)
         self.reset_parameters()
         
     def reset_parameters(self):

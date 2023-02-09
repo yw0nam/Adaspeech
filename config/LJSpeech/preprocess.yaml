@@ -3,6 +3,7 @@ dataset: "LJSpeech"
 path:
   corpus_path: "/data1/spow12/datas/TTS/LJSpeech-1.1"
   raw_path: "./raw_data/LJSpeech"
+  lexicon_path: "./lexicon/librispeech-lexicon.txt"
   preprocessed_path: "./preprocessed_data/LJSpeech"
 
 preprocessing:

@@ -82,14 +82,14 @@ def main(train_config, preprocess_config, model_config):
     trainer = pl.Trainer(
         accelerator="gpu",
         devices=num_gpu,
-        strategy = DDPStrategy(find_unused_parameters=False),
+        strategy = DDPStrategy(find_unused_parameters=True),
         max_steps=train_config['step']['total_step'],
         enable_checkpointing=True,
         callbacks=[checkpoint_callback, lr_monitor],
         profiler="simple",
         accumulate_grad_batches=train_config['trainer']['grad_acc'],
         logger=logger,
-        gradient_clip_val=train_config['trainer']['grad_clip_thresh']
+        gradient_clip_val=train_config['trainer']['grad_clip_thresh'],
     )
     trainer.fit(model)
     

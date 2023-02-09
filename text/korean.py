@@ -4,8 +4,8 @@ import ast
 import json
 # from quickspacer import Spacer
 # from g2pk import G2p
-# from jamo import hangul_to_jamo, h2j, j2h
-# from jamo.jamo import _jamo_char_to_hcj
+from jamo import hangul_to_jamo, h2j, j2h
+from jamo.jamo import _jamo_char_to_hcj
 from .korean_dict import JAMO_LEADS, JAMO_VOWELS, JAMO_TAILS, ko_dict
 
 # g2p=G2p()
@@ -19,6 +19,8 @@ def tokenize(text, norm=True):
     Example:
         '한글은 위대하다.'  --> ['ᄒ', 'ᅡ', 'ᆫ', 'ᄀ', 'ᅳ', 'ᄅ', 'ᅳ', ' ', 'ᄂ', 'ᅱ', 'ᄃ', 'ᅢ', 'ᄒ', 'ᅡ', 'ᄃ', 'ᅡ', '.']
     """
+    from g2pk import G2p
+    g2p=G2p()
     if norm:
         text = normalize(text)
     text = g2p(text)
